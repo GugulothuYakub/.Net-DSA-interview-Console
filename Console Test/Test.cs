@@ -1,9 +1,19 @@
 ﻿using System;
+using System.Buffers.Text;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics.Contracts;
+using System.Diagnostics.Metrics;
+using System.Drawing;
 using System.Linq;
+using System.Net.NetworkInformation;
+using System.Numerics;
 using System.Reflection;
+using System.Runtime.ConstrainedExecution;
+using System.Runtime.Intrinsics.X86;
+using System.Runtime.Serialization;
+using System.Security.Claims;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -16,6 +26,69 @@ namespace Console_Test
 {
     class Program
     {
+
+        #region Base Inherit and Arrow Function Syntax
+
+        //Part 1: C# Class Inheritance Fix
+
+        //class A
+        //{
+        //    int a, b, c;
+
+        //    public A(int _a, int _b, int _c = 0) // Constructor must be public if inherited
+        //    {
+        //        a = _a;
+        //        b = _b;
+        //        c = _c;
+        //    }
+
+        //    public void Display()
+        //    {
+        //        Console.WriteLine($"a = {a}, b = {b}, c = {c}");
+        //    }
+        //}
+
+        //class B : A
+        //{
+        //    public B(int a, int b) : base(a, b) // Calls base constructor with 2 values
+        //    {
+        //    }
+        //}
+
+        //class Program
+        //{
+        //    static void Main(string[] args)
+        //    {
+        //        B b = new B(1, 2);
+        //        b.Display(); // Output: a = 1, b = 2, c = 0
+        //    }
+        //}
+
+        //=======================================================================
+
+        //Part 2: Arrow Function Syntax
+
+        //Here are three similar-looking arrow functions:
+
+        //1️⃣ (a) => { a.name }
+        //🔴 Incorrect – missing a return or statement.You need to return something.
+
+        //2️⃣ (a) => a.name
+        //✅ Correct – this returns a.name.
+
+        //Shorthand syntax for returning a single expression.
+
+        //3️⃣ (a) => ({ name: a.name })
+        //✅ Correct in JavaScript, NOT valid in C#.
+
+        //In JavaScript, this creates an object with { name: a.name }.
+
+        //✅ C# Equivalent:
+        //If you're projecting to an anonymous object:
+
+        //var result = list.Select(a => new { Name = a.Name });
+        #endregion
+
         #region Oops
         #region Objects and Classes
         //public class Car
@@ -46,6 +119,26 @@ namespace Console_Test
         #endregion
 
         #region Encapsulation  ==  Access Modifiers
+
+        #region🔷 1. Encapsulation
+
+        //💬 Definition:
+        //Encapsulation is the process of wrapping data(variables) and methods(functions)
+        //that operate on the data into a single unit(class).
+        //It also involves restricting direct access to some of the object’s components,
+        //which is achieved using access modifiers(like private, public).
+
+        //📌 Real-Life Analogy:
+        //A medicine capsule encapsulates the drug inside a shell.
+        //The user doesn't need to know the internal composition, only that it works.
+
+        //✅ Interview Keywords:
+
+        //Data hiding
+        //Access modifiers
+        //Getter and setter
+        #endregion
+
         //Encapsulation is the concept of bundling data (variables) and methods (functions) that operate on the data into a single unit,
         //i.e., a class, and restricting access to certain details of the class from the outside world.
         //This is done using access modifiers like public, private, protected, etc.
@@ -91,6 +184,21 @@ namespace Console_Test
         #endregion
 
         #region Inheritance
+
+        #region 🔷 2. Inheritance
+        //💬 Definition:
+        //Inheritance is a mechanism where one class (child/derived) inherits the properties and
+        //behaviors(fields and methods) of another class (parent/base). It promotes code reusability and establishes a "is-a" relationship.
+
+        //📌 Real-Life Analogy:
+        //A child inherits characteristics from their parents(like eye color, height, etc.).
+
+        //✅ Interview Keywords:
+        //Code reuse
+        //Parent-child relationship
+        //Base and derived class
+        #endregion
+
         //Inheritance allows one class (child class) to inherit the properties and methods of another class (parent class).
         //It promotes code reuse.
 
@@ -121,6 +229,26 @@ namespace Console_Test
         #endregion
 
         #region Polymorphism
+
+        #region🔷 3. Polymorphism
+        //💬 Definition:
+        //Polymorphism means "many forms". It allows objects to behave differently based on their actual types,
+        //even when accessed through a common interface. It can be:
+
+        //Compile-time(Method Overloading)
+
+        //Run-time(Method Overriding using virtual/override)
+
+        //📌 Real-Life Analogy:
+        //A person behaves differently in different roles – as a teacher, parent, or friend – though they are the same person.
+
+        //✅ Interview Keywords:
+
+        //Many forms
+        //Overloading (compile-time)
+        //Overriding(run-time)
+        //Virtual & override
+        #endregion
 
         //Polymorphism allows methods to do different things based on the object it is acting upon.
         //Method Overriding: Redefining a base class method in a derived class.
@@ -164,6 +292,22 @@ namespace Console_Test
         #endregion
 
         #region Abstraction
+
+        #region🔷 4. Abstraction
+        //💬 Definition:
+        //Abstraction is the process of hiding complex internal details and
+        //showing only the essential features of the object. It allows the user to focus on what an object does instead of how it does it.
+
+        //📌 Real-Life Analogy:
+        //When you drive a car, you use the steering wheel and pedals without needing to understand the engine or transmission system.
+
+        //✅ Interview Keywords:
+
+        //Hiding complexity
+        //Abstract class or interface
+        //Only essential details
+        #endregion
+
         //Abstraction is the concept of hiding the complex implementation details and showing only the essential features.
         //public abstract class Shape
         //{
@@ -206,110 +350,156 @@ namespace Console_Test
 
         #endregion
 
-        #region Reverse a String
-        //static void Main()
+        #region Abstract And Interfaces
+
+        #region
+        //In C#, both abstract classes and interfaces support abstraction.
+        //However, abstract classes are best suited when classes share common base functionality,
+        //while interfaces are ideal for defining shared capabilities across unrelated classes.
+        //I choose abstract classes when I want to share default behavior and interfaces when I need flexibility and multiple inheritance.
+
+        //When to Use What?
+
+        //Situation                                                                           Use
+
+        //You have base code logic to reuse(e.g., Start())                                    ✅ Abstract Class
+        //You want to apply Drive() behavior to multiple unrelated classes(e.g., Car, Robot)  ✅ Interface
+        //You need multiple base contracts(IDrivable, ILoggable, ISerializable)               ✅ Interface
+        //You’re modeling a base entity type in a hierarchy	                                  ✅ Abstract Class
+        #endregion
+
+        #region ✅ Example: Abstract Class vs Interface in C#
+        //1. Using Abstract Class
+
+        //public abstract class Vehicle
         //{
-        //    //string input = "Yakub";
-        //    Console.Write("Enter a string to reverse: ");
-        //    string input = Console.ReadLine();
-        //    string reversed = ReverseString(input);
-        //    Console.WriteLine(reversed);
+        //public string Brand { get; set; }
+
+        //public void Start()
+        //{
+        //Console.WriteLine("Vehicle started.");
         //}
 
-        //static string ReverseString(string str)
+        //public abstract void Drive();
+        //}
+
+        //public class Car : Vehicle
         //{
-        //    StringBuilder reversedString = new StringBuilder();
+        //public override void Drive()
+        //{
+        //Console.WriteLine("Car is driving...");
+        //}
+        //}
 
-        //    for (int i = str.Length - 1; i >= 0; i--)
-        //    {
-        //        reversedString.Append(str[i]);
-        //    }
+        //2. Using Interface
 
-        //    return reversedString.ToString();
+        //public interface IDrivable
+        //{
+        //void Drive();
+        //}
+
+        //public class Robot : IDrivable
+        //{
+        //public void Drive()
+        //{
+        //Console.WriteLine("Robot is driving...");
+        //}
         //}
         #endregion
 
-        #region reverse number
-        //public static void Main()
+        #region🔍 First: What Do Both Do?
+
+        //Both abstract classes and interfaces provide abstraction,
+        //meaning they hide implementation details and expose only the signature or contract of the method.
+
+        //======================================================================================================================
+
+        //But there are key differences in when and why you'd use one over the other.
+
+        //✅ Quick Definitions:
+        //Concept                           Definition
+        //Abstraction(via abstract class)	A way to define base functionality + enforced method(s) that must be implemented by derived classes.
+        //Interface                         A pure contract with only method/property signatures.No implementation logic (until C# 8+).
+        #endregion
+
+        #region🎯 Key Differences (with Interview Explanation)
+
+        //Feature               Abstract Class                                                Interface
+        //Inheritance           Supports single inheritance                                   A class can implement multiple interfaces
+        //Members               Can have fields, constructors, and method implementations     Cannot have fields or constructors(pre-C# 8)
+        //Use Case              Use when there's a "is-a" relationship & shared code logicUse when you need a contract across unrelated classes
+        //Access Modifiers      Can use public, protected, private, etc.                      Members are always public (pre-C# 8)
+        //Instantiation         Cannot instantiate abstract classes                           Cannot instantiate interfaces either
+        //DefaultImplementation Possible(since beginning)                                     Available only since C# 8.0 (via default interface methods)
+        #endregion
+
+        #region🧠 Interview Tip:
+
+        //"When should you choose an abstract class over an interface?"
+
+        //✔ Use abstract class when :
+
+        //You have shared base behavior or state
+
+        //You want to provide some default implementation
+
+        //There's a clear "is-a" relationship (e.g., Car is a Vehicle)
+
+        //✔ Use interface when :
+
+        //You want to enforce a contract
+
+        //You need multiple inheritance
+
+        //You're defining capabilities (e.g., IDrivable, ISerializable)
+
+        //📌 Real-World Analogy:
+
+        //Abstract Class: Like a blueprint for a family of related objects.Example:
+        //Vehicle is a base class for Car, Bike, Bus, etc.They share common behavior(Drive(), Fuel(), etc.)
+
+        //Interface: Like a job role or skill set.Example: IDrivable, IFlyable, IChargeable.
+        //Any class that "can do" something can implement the interface, regardless of its inheritance.
+        #endregion
+
+        #region Example Demonstrating All 4 Concepts Together:
+
+        //public abstract class Vehicle                     // Abstraction
         //{
-        //    int a = 12345;
-        //    Console.WriteLine(a);
-        //    int reversenumber = reverseNumber(a);
-        //    Console.WriteLine(reversenumber);
+        //    public abstract void Drive();
         //}
-        //public static int reverseNumber(int number)
+
+        //public class Car : Vehicle                     // Inheritance
         //{
-        //    int reversednum = 0;
-        //    while (number > 0)
+        //    private string model;                       // Encapsulation
+
+        //    public string Model
         //    {
-        //        int digit = number % 10;
-        //        reversednum = (reversednum * 10 + digit);
-        //        number /= 10;
+        //        get { return model; }
+        //        set { model = value; }
         //    }
-        //    return reversednum;
+
+        //    public override void Drive()                    // Polymorphism (Overriding)
+        //    {
+        //        Console.WriteLine("Driving a car...");
+        //    }
+        //}
+
+        //public class Program
+        //{
+        //    public static void Main()
+        //    {
+        //        Car myCar = new Car();
+        //        myCar.Model = "Toyota";                   // Encapsulation
+        //        Console.WriteLine("Car Model: " + myCar.Model);
+        //        myCar.Drive();                            // Abstraction + Polymorphism
+        //    }
         //}
         #endregion
 
-        #region Find middle letter of string
-        //static void Main()
-        //{
-        //    string input = "example";
-        //    char? middleChar = GetMiddleCharacter(input);
-
-        //    if (middleChar.HasValue)
-        //    { Console.WriteLine($"The middle character is: {middleChar.Value}"); }
-        //    else { Console.WriteLine("The string is empty."); }
-        //}
-
-        //static char? GetMiddleCharacter(string str)
-        //{
-        //    if (string.IsNullOrEmpty(str)) { return null; }
-
-        //    int length = str.Length;
-        //    int middleIndex = length / 2;
-
-        //    return length % 2 == 0 ? str[middleIndex - 1] : str[middleIndex];
-        //}
         #endregion
 
-        #region Distinct Array
-        //static void Main()
-        //{
-        //    int[] numbers = { 1, 1, 1, 1, 1, 2, 3, 4, 5, 6 };
-
-        //    int[] distinctArray = new int[numbers.Length];
-        //    int distinctCount = 0;
-
-        //    for (int i = 0; i < numbers.Length; i++)
-        //    {
-        //        bool isDistinct = true;
-
-        //        for (int j = 0; j < distinctCount; j++)
-        //        {
-        //            if (numbers[i] == distinctArray[j])
-        //            {
-        //                isDistinct = false;
-        //                break;
-        //            }
-        //        }
-
-        //        if (isDistinct)
-        //        {
-        //            distinctArray[distinctCount] = numbers[i];
-        //            distinctCount++;
-        //        }
-        //    }
-
-        //    Console.WriteLine("Distinct elements:");
-        //    for (int i = 0; i < distinctCount; i++)
-
-        //    {
-        //        Console.Write(distinctArray[i] + " ");
-        //    }
-        //}
-        #endregion
-
-        #region DSA
+        #region DSA Option 1
 
         #region Arrays
         //Arrays: A collection of elements identified by an index.
@@ -671,625 +861,7 @@ namespace Console_Test
 
         #endregion
 
-        #region Fibonacci Series
-
-        ////Fibonacci Series up to 10 terms:
-        ////0 1 1 2 3 5 8 13 21 34
-        //static void Main()
-        //{
-        //    int n = 10;  // Number of terms in the Fibonacci series
-        //    Console.WriteLine($"Fibonacci Series up to {n} terms:");
-
-        //    // Print the Fibonacci series up to the nth term
-        //    for (int i = 0; i < n; i++)
-        //    {
-        //        Console.Write(Fibonacci(i) + " ");
-        //    }
-        //}
-
-        //// Recursive function to return the nth Fibonacci number
-        //static int Fibonacci(int n)
-        //{
-        //    // Base case: the first and second Fibonacci numbers are 0 and 1 respectively
-        //    if (n <= 1)
-        //    {
-        //        return n;
-        //    }
-        //    else
-        //    {
-        //        // Recursive case: Fibonacci(n) = Fibonacci(n-1) + Fibonacci(n-2)
-        //        return Fibonacci(n - 1) + Fibonacci(n - 2);
-        //    }
-        //}
-        #endregion
-
-        #region Palindrome Number
-        //public class Solution1
-        //{
-        //    public bool IsPalindrome(int x)
-        //    {
-        //        int r = 0, c = x;
-        //        while (c > 0)
-        //        {
-        //            r = r * 10 + c % 10;
-        //            c /= 10;
-        //        }
-        //        return r == x;
-        //    }
-        //}
-        #endregion
-
-        #region Palindrome String
-        //static void Main()
-        //{
-        //    Console.Write("Enter a string: ");
-        //    string input = Console.ReadLine();
-
-        //    // Check if the input string is a palindrome
-        //    if (IsPalindrome(input))
-        //    {
-        //        Console.WriteLine($"{input} is a palindrome.");
-        //    }
-        //    else
-        //    {
-        //        Console.WriteLine($"{input} is not a palindrome.");
-        //    }
-        //}
-
-        //// Function to check if a string is a palindrome
-        //static bool IsPalindrome(string str)
-        //{
-        //    int left = 0;
-        //    int right = str.Length - 1;
-
-        //    // Compare characters from both ends of the string
-        //    while (left < right)
-        //    {
-        //        // If characters don't match, it's not a palindrome
-        //        if (str[left] != str[right])
-        //        {
-        //            return false;
-        //        }
-        //        left++;
-        //        right--;
-        //    }
-        //    return true;  // If all characters match, it's a palindrome
-        //}
-        #endregion
-
-        #region Prime Number Check
-        //static void Main()
-        //{
-        //    int number = 29;  // Number to check if it's prime
-        //    bool isPrime = IsPrime(number);  // Call the IsPrime function
-        //    Console.WriteLine(isPrime ? "Prime Number" : "Not Prime Number");  // Output the result
-        //}
-
-        //static bool IsPrime(int num)
-        //{
-        //    if (num <= 1)  // Numbers less than or equal to 1 are not prime
-        //    {
-        //        return false;
-        //    }
-
-        //    for (int i = 2; i <= Math.Sqrt(num); i++)  // Check divisibility up to the square root of num
-        //    {
-        //        if (num % i == 0)  // If num is divisible by i, it's not a prime number
-        //        {
-        //            return false;  // Return false if a divisor is found
-        //        }
-        //    }
-        //    return true;  // Return true if no divisors are found, meaning the number is prime
-        //}
-        #endregion
-
-        #region Factorial
-        //static void Main()
-        //{
-        //    int number = 5;  // Number to calculate factorial
-        //    int result = Factorial(number);  // Call the Factorial function
-        //    Console.WriteLine("Factorial of " + number + " is: " + result);  // Output the result
-        //}
-
-        //static int Factorial(int num)
-        //{
-        //    if (num == 0 || num == 1)  // Base case: 0! = 1 and 1! = 1
-        //    {
-        //        return 1;
-        //    }
-
-        //    return num * Factorial(num - 1);  // Recursive case: num * (num-1)!
-        //}
-        #endregion
-
-        #region Armstrong Number
-        ////What is an Armstrong Number?
-        ////An Armstrong number(also known as a Narcissistic number or Pluperfect Digital Invariant) is a number that is equal to the sum of its own digits, each raised to the power of the number of digits.
-
-        ////For example:
-        ////153 is an Armstrong number because:
-        ////1^3 +5^3 +3^3 =153
-
-        ////9474 is also an Armstrong number because:
-        ////9^4 +4^4 +7^4 +4^4 =9474
-
-        ////Whereas 123 is not an Armstrong number because:
-        ////1^3 +2^3 +3^3 =1+8+27=36, and that is not equal to 123.
-
-        //static void Main()
-        //{
-        //    int number = 153;  // Number to check if it's an Armstrong number
-        //    bool isArmstrong = IsArmstrong(number);  // Call the IsArmstrong function
-        //    Console.WriteLine(isArmstrong ? "Armstrong Number" : "Not Armstrong Number");  // Output the result
-        //}
-
-        //static bool IsArmstrong(int num)
-        //{
-        //    int sum = 0;
-        //    int originalNumber = num;
-        //    int digitsCount = num.ToString().Length;  // Count the number of digits in the number
-
-        //    // Loop through each digit of the number
-        //    while (num > 0)
-        //    {
-        //        int digit = num % 10;  // Get the last digit
-        //        sum += (int)Math.Pow(digit, digitsCount);  // Add the digit raised to the power of the number of digits
-        //        num /= 10;  // Remove the last digit
-        //    }
-
-        //    return sum == originalNumber;  // If sum of powered digits equals original number, it's an Armstrong number
-        //}
-        #endregion
-
-        #region Sum of Digits of a Number
-        //static void Main()
-        //{
-        //    int number = 1234;  // Number to calculate the sum of digits
-        //    int sum = SumOfDigits(number);
-        //    Console.WriteLine($"Sum of digits of {number} is: {sum}");
-        //}
-
-        //static int SumOfDigits(int num)
-        //{
-        //    int sum = 0;
-        //    while (num > 0)
-        //    {
-        //        sum += num % 10;  // Add last digit to sum
-        //        num /= 10;  // Remove last digit
-        //    }
-        //    return sum;
-        //}
-        #endregion
-
-        #region Matrix
-
-        #region Matrix Addition
-        //static void Main()
-        //{
-        //    // Define two matrices
-        //    int[,] matrix1 = { { 1, 2, 3 }, { 4, 5, 6 } };
-        //    int[,] matrix2 = { { 7, 8, 9 }, { 10, 11, 12 } };
-
-        //    // Get the result of matrix addition
-        //    int[,] result = MatrixAddition(matrix1, matrix2);
-
-        //    // Print the result
-        //    Console.WriteLine("Result of Matrix Addition:");
-        //    PrintMatrix(result);
-        //}
-
-        //static int[,] MatrixAddition(int[,] mat1, int[,] mat2)
-        //{
-        //    int rows = mat1.GetLength(0);
-        //    int cols = mat1.GetLength(1);
-        //    int[,] sum = new int[rows, cols];
-
-        //    // Perform element-wise addition
-        //    for (int i = 0; i < rows; i++)
-        //    {
-        //        for (int j = 0; j < cols; j++)
-        //        {
-        //            sum[i, j] = mat1[i, j] + mat2[i, j];
-        //        }
-        //    }
-        //    return sum;
-        //}
-
-        //// Function to print the matrix
-        //static void PrintMatrix(int[,] matrix)
-        //{
-        //    int rows = matrix.GetLength(0);
-        //    int cols = matrix.GetLength(1);
-
-        //    for (int i = 0; i < rows; i++)
-        //    {
-        //        for (int j = 0; j < cols; j++)
-        //        {
-        //            Console.Write(matrix[i, j] + " ");
-        //        }
-        //        Console.WriteLine();
-        //    }
-        //}
-        #endregion
-
-        #region Matrix Multiplication
-        //static void Main()
-        //{
-        //    // Define two matrices
-        //    int[,] matrix1 = { { 1, 2 }, { 3, 4 } };
-        //    int[,] matrix2 = { { 5, 6 }, { 7, 8 } };
-
-        //    // Get the result of matrix multiplication
-        //    int[,] result = MatrixMultiplication(matrix1, matrix2);
-
-        //    // Print the result
-        //    Console.WriteLine("Result of Matrix Multiplication:");
-        //    PrintMatrix(result);
-        //}
-
-        //static int[,] MatrixMultiplication(int[,] mat1, int[,] mat2)
-        //{
-        //    int rows1 = mat1.GetLength(0);
-        //    int cols1 = mat1.GetLength(1);
-        //    int rows2 = mat2.GetLength(0);
-        //    int cols2 = mat2.GetLength(1);
-
-        //    if (cols1 != rows2)
-        //    {
-        //        throw new Exception("Matrix multiplication is not possible. Columns of the first matrix must equal rows of the second matrix.");
-        //    }
-
-        //    int[,] result = new int[rows1, cols2];
-
-        //    // Perform matrix multiplication
-        //    for (int i = 0; i < rows1; i++)
-        //    {
-        //        for (int j = 0; j < cols2; j++)
-        //        {
-        //            result[i, j] = 0;
-        //            for (int k = 0; k < cols1; k++)
-        //            {
-        //                result[i, j] += mat1[i, k] * mat2[k, j];
-        //            }
-        //        }
-        //    }
-        //    return result;
-        //}
-
-        //// Function to print the matrix
-        //static void PrintMatrix(int[,] matrix)
-        //{
-        //    int rows = matrix.GetLength(0);
-        //    int cols = matrix.GetLength(1);
-
-        //    for (int i = 0; i < rows; i++)
-        //    {
-        //        for (int j = 0; j < cols; j++)
-        //        {
-        //            Console.Write(matrix[i, j] + " ");
-        //        }
-        //        Console.WriteLine();
-        //    }
-        //}
-        #endregion
-
-        #region Matrix Transpose
-        //static void Main()
-        //{
-        //    // Define a matrix
-        //    int[,] matrix = { { 1, 2, 3 }, { 4, 5, 6 } };
-
-        //    // Get the transpose of the matrix
-        //    int[,] result = TransposeMatrix(matrix);
-
-        //    // Print the result
-        //    Console.WriteLine("Transpose of the Matrix:");
-        //    PrintMatrix(result);
-        //}
-
-        //static int[,] TransposeMatrix(int[,] mat)
-        //{
-        //    int rows = mat.GetLength(0);
-        //    int cols = mat.GetLength(1);
-        //    int[,] transpose = new int[cols, rows];
-
-        //    // Swap rows and columns to get the transpose
-        //    for (int i = 0; i < rows; i++)
-        //    {
-        //        for (int j = 0; j < cols; j++)
-        //        {
-        //            transpose[j, i] = mat[i, j];
-        //        }
-        //    }
-        //    return transpose;
-        //}
-
-        //// Function to print the matrix
-        //static void PrintMatrix(int[,] matrix)
-        //{
-        //    int rows = matrix.GetLength(0);
-        //    int cols = matrix.GetLength(1);
-
-        //    for (int i = 0; i < rows; i++)
-        //    {
-        //        for (int j = 0; j < cols; j++)
-        //        {
-        //            Console.Write(matrix[i, j] + " ");
-        //        }
-        //        Console.WriteLine();
-        //    }
-        //}
-        #endregion
-
-        #region Print a 2x2 Matrix
-        //static void Main()
-        //{
-        //    // Define a 2x2 matrix
-        //    int[,] matrix = { { 1, 2 }, { 3, 4 } };
-
-        //    // Print the matrix
-        //    PrintMatrix(matrix);
-        //}
-
-        //static void PrintMatrix(int[,] matrix)
-        //{
-        //    int rows = matrix.GetLength(0);  // Get the number of rows
-        //    int cols = matrix.GetLength(1);  // Get the number of columns
-
-        //    // Loop through the matrix and print each element
-        //    for (int i = 0; i < rows; i++)
-        //    {
-        //        for (int j = 0; j < cols; j++)
-        //        {
-        //            Console.Write(matrix[i, j] + " "); // Print each element
-        //        }
-        //        Console.WriteLine(); // Move to the next line after each row
-        //    }
-        //}
-        #endregion
-
-        #endregion
-
-        #region "abc38gh89" separate number from this string
-        //static void Main()
-        //{
-        //    string input = "abc38gh89";
-
-        //    string numbers = Regex.Replace(input, @"\D", "");
-
-        //    Console.WriteLine(numbers);
-        //}
-
-        //static void Main()
-        //{
-        //    string input = "abc38gh89";
-
-        //    char[] charArray = input.ToCharArray();
-
-        //    string numbers = "";
-
-        //    foreach (char ch in charArray)
-        //    {
-        //        if (char.IsDigit(ch))
-        //        {
-        //            numbers += ch;
-        //        }
-        //    }
-        //    Console.WriteLine(numbers);
-        //}
-        #endregion
-
-        #region Move all the zeroes to one side of array and ones to right side of array
-
-        //static void Main()
-        //{
-        //    int[] arr = { 1, 0, 1, 0, 1, 0, 0, 1, 0 };
-
-        //    MoveZeroesAndOnes(arr);
-
-        //    Console.WriteLine("Modified array: ");
-        //    foreach (int num in arr)
-        //    {
-        //        Console.Write(num + " ");
-        //    }
-        //}
-
-        //static void MoveZeroesAndOnes(int[] arr)
-        //{
-        //    int left = 0;  // Pointer for left side (zeroes)
-        //    int right = arr.Length - 1;  // Pointer for right side (ones)
-
-        //    while (left < right)
-        //    {
-        //        // Move left pointer until we find a 1
-        //        while (arr[left] == 0 && left < right)
-        //        {
-        //            left++;
-        //        }
-
-        //        // Move right pointer until we find a 0
-        //        while (arr[right] == 1 && left < right)
-        //        {
-        //            right--;
-        //        }
-
-        //        // If left pointer is less than right pointer, swap elements
-        //        if (left < right)
-        //        {
-        //            // Swap 0 and 1
-        //            int temp = arr[left];
-        //            arr[left] = arr[right];
-        //            arr[right] = temp;
-
-        //            // Move both pointers
-        //            left++;
-        //            right--;
-        //        }
-        //    }
-        //}
-        #endregion
-
-        #region Anagrams
-
-        //class AnagramChecker
-        //{
-        //    // Method to check if two strings are anagrams
-        //    static bool AreAnagrams(string str1, string str2)
-        //    {
-        //        // If the lengths are different, they can't be anagrams
-        //        if (str1.Length != str2.Length)
-        //        {
-        //            return false;
-        //        }
-
-        //        // Create an array to count the frequency of each character (assuming ASCII)
-        //        int[] counts = new int[256]; // Assuming ASCII characters
-
-        //        // Traverse both strings and count the frequency of each character
-        //        for (int i = 0; i < str1.Length; i++)
-        //        {
-        //            counts[str1[i]]++; // Increment count for character in str1
-        //            counts[str2[i]]--; // Decrement count for character in str2
-        //        }
-
-        //        // If all counts are zero, the strings are anagrams
-        //        foreach (var count in counts)
-        //        {
-        //            if (count != 0)
-        //            {
-        //                return false;
-        //            }
-        //        }
-
-        //        return true;
-        //    }
-
-        //    static void Main(string[] args)
-        //    {
-        //        // Example strings to check
-        //        string str1 = "listen";
-        //        string str2 = "silent";
-
-        //        // Check if the two strings are anagrams
-        //        if (AreAnagrams(str1, str2))
-        //        {
-        //            Console.WriteLine($"{str1} and {str2} are anagrams.");
-        //        }
-        //        else
-        //        {
-        //            Console.WriteLine($"{str1} and {str2} are not anagrams.");
-        //        }
-        //    }
-        //}
-
-        //public bool Anagram()
-        //{
-        //    // Convert both strings to lowercase to ignore case sensitivity
-        //    string s = "Listen".ToLower();  // s = "listen"
-        //    string t = "Silent".ToLower();  // t = "silent"
-
-        //    // If lengths differ, they can't be anagrams
-        //    if (s.Length != t.Length)       // s.Length = 6, t.Length = 6 → equal → continue
-        //        return false;
-
-        //    // Create frequency array for 26 lowercase English letters
-        //    int[] freq = new int[26];       // freq[0] = 'a', freq[1] = 'b', ..., freq[25] = 'z'
-        //                                    // Initially all values are 0
-
-        //    // Loop through both strings to update frequency counts
-        //    for (int i = 0; i < s.Length; i++)  // i from 0 to 5
-        //    {
-        //        freq[s[i] - 'a']++;         // Increment count for char from s
-        //        freq[t[i] - 'a']--;         // Decrement count for char from t
-
-        //        // Example at i = 0:
-        //        // s[0] = 'l' → freq['l' - 'a']++ → freq[11]++
-        //        // t[0] = 's' → freq['s' - 'a']-- → freq[18]--
-        //    }
-
-        //    // After loop: if strings are anagrams, all freq[] elements should be 0
-        //    foreach (int count in freq)
-        //    {
-        //        if (count != 0)             // If any count is not zero → not an anagram
-        //            return false;
-        //    }
-
-        //    // All character counts matched → strings are anagrams
-        //    return true;                    // Output: true
-        //}
-
-        class AnagramChecker
-        {
-            static void Main(string[] args)
-            {
-                string str1 = "listen";
-                string str2 = "silent";
-
-                // Call static method with two strings
-                if (Anagram(str1, str2))
-                {
-                    Console.WriteLine($"{str1} and {str2} are anagrams.");
-                }
-                else
-                {
-                    Console.WriteLine($"{str1} and {str2} are not anagrams.");
-                }
-            }
-
-            public static bool Anagram(string s, string t)
-            {
-                s = s.ToLower();
-                t = t.ToLower();
-
-                if (s.Length != t.Length)
-                    return false;
-
-                int[] freq = new int[26];
-
-                for (int i = 0; i < s.Length; i++)
-                {
-                    freq[s[i] - 'a']++;
-                    freq[t[i] - 'a']--;
-                }
-
-                foreach (int count in freq)
-                {
-                    if (count != 0)
-                        return false;
-                }
-
-                return true;
-            }
-        }
-
-
-        #endregion
-
-        #region Two Sum
-        //Input: nums = [2, 7, 11, 15], target = 9
-        //Output: [0, 1]
-        //Explanation: Because nums[0] + nums[1] == 9, we return [0, 1].
-        //public class Solution
-        //{
-        //    public int[] TwoSum(int[] nums, int target)
-        //    {
-        //        for (int i = 0; i < nums.Length; i++)
-        //        {
-        //            for (int j = i + 1; j < nums.Length; j++)
-        //            {
-        //                if (nums[j] == target - nums[i])
-        //                {
-        //                    return new int[] { i, j };
-        //                }
-        //            }
-        //        }
-        //        // Return an empty array if no solution is found
-        //        return new int[] { };
-        //    }
-        //}
-        #endregion
-
-        #region  Using DSA
+        #region  Using DSA Option 2
 
         #region reverse the order of a string
         // write a c# program to reverse the order of a string? 
@@ -1510,6 +1082,7 @@ namespace Console_Test
         //}
 
         #endregion
+
         #endregion
 
         #region sort a string array in ascending order
@@ -1565,6 +1138,161 @@ namespace Console_Test
         //            Console.WriteLine(s.ToLower());
         //        }
         //        Console.ReadLine();
+        //    }
+        //}
+        #endregion
+
+        #region "abc38gh89" separate number from this string
+        //static void Main()
+        //{
+        //    string input = "abc38gh89";
+
+        //    string numbers = Regex.Replace(input, @"\D", "");
+
+        //    Console.WriteLine(numbers);
+        //}
+
+        //static void Main()
+        //{
+        //    string input = "abc38gh89";
+
+        //    char[] charArray = input.ToCharArray();
+
+        //    string numbers = "";
+
+        //    foreach (char ch in charArray)
+        //    {
+        //        if (char.IsDigit(ch))
+        //        {
+        //            numbers += ch;
+        //        }
+        //    }
+        //    Console.WriteLine(numbers);
+        //}
+        #endregion
+
+        #region Anagrams
+
+        #region Anagrams 1
+        //class AnagramChecker
+        //{
+        //    static void Main(string[] args)
+        //    {
+        //        string str1 = "listen";
+        //        string str2 = "silent";
+
+        //        // Call static method with two strings
+        //        if (Anagram(str1, str2))
+        //        {
+        //            Console.WriteLine($"{str1} and {str2} are anagrams.");
+        //        }
+        //        else
+        //        {
+        //            Console.WriteLine($"{str1} and {str2} are not anagrams.");
+        //        }
+        //    }
+
+        //    public static bool Anagram(string s, string t)
+        //    {
+        //        s = s.ToLower();
+        //        t = t.ToLower();
+
+        //        if (s.Length != t.Length)
+        //            return false;
+
+        //        int[] freq = new int[26];
+
+        //        for (int i = 0; i < s.Length; i++)
+        //        {
+        //            freq[s[i] - 'a']++;
+        //            freq[t[i] - 'a']--;
+        //        }
+
+        //        foreach (int count in freq)
+        //        {
+        //            if (count != 0)
+        //                return false;
+        //        }
+
+        //        return true;
+        //    }
+        //}
+        #endregion
+
+        #region Anagram 2
+        //class Programsss
+        //{
+        //    static void Main()
+        //    {
+        //        string s1 = "listen";
+        //        string s2 = "silent";
+
+        //        // Check if lengths are the same (anagrams must be equal length)
+        //        if (s1.Length != s2.Length)
+        //        {
+        //            Console.WriteLine("Not an anagram");
+        //            return;
+        //        }
+
+        //        Dictionary<char, int> charCount = new Dictionary<char, int>();
+
+        //        // First loop: count characters from first string s1
+        //        for (int i = 0; i < s1.Length; i++)
+        //        {
+        //            char c = s1[i];
+        //            if (charCount.ContainsKey(c))
+        //                charCount[c]++;
+        //            else
+        //                charCount[c] = 1;
+        //        }
+
+        //        // Second loop: count characters from second string s2 (increase count)
+        //        for (int i = 0; i < s2.Length; i++)
+        //        {
+        //            char c = s2[i];
+        //            if (charCount.ContainsKey(c))
+        //                charCount[c]++;
+        //            else
+        //                charCount[c] = 1;
+        //        }
+
+        //        // Now check if all counts are even numbers (because s1 and s2 together)
+        //        foreach (var kvp in charCount)
+        //        {
+        //            if (kvp.Value % 2 != 0)
+        //            {
+        //                Console.WriteLine("Not an anagram");
+        //                return;
+        //            }
+        //        }
+
+        //        Console.WriteLine("Strings are anagrams");
+        //    }
+        //}
+        #endregion
+
+        #endregion
+
+        #region Two Sum
+        //Input: nums = [2, 7, 11, 15], target = 9
+        //Output: [0, 1]
+        //Explanation: Because nums[0] + nums[1] == 9, we return [0, 1].
+        //public class Solution
+        //{
+        //    public int[] TwoSum(int[] nums, int target)
+        //    {
+        //        for (int i = 0; i < nums.Length; i++)
+        //        {
+        //            for (int j = i + 1; j < nums.Length; j++)
+        //            {
+        //                if (nums[j] == target - nums[i])
+        //                {
+        //                    return new int[] { i, j };
+        //                }
+        //            }
+        //        }
+        //        // Return an empty array if no solution is found
+        //        return new int[] { };
         //    }
         //}
         #endregion
@@ -1832,10 +1560,569 @@ namespace Console_Test
         //} 
         #endregion
 
-        //#endregion
+        #region Fibonacci Series
 
+        ////Fibonacci Series up to 10 terms:
+        ////0 1 1 2 3 5 8 13 21 34
+        //static void Main()
+        //{
+        //    int n = 10;  // Number of terms in the Fibonacci series
+        //    Console.WriteLine($"Fibonacci Series up to {n} terms:");
 
+        //    // Print the Fibonacci series up to the nth term
+        //    for (int i = 0; i < n; i++)
+        //    {
+        //        Console.Write(Fibonacci(i) + " ");
+        //    }
+        //}
 
+        //// Recursive function to return the nth Fibonacci number
+        //static int Fibonacci(int n)
+        //{
+        //    // Base case: the first and second Fibonacci numbers are 0 and 1 respectively
+        //    if (n <= 1)
+        //    {
+        //        return n;
+        //    }
+        //    else
+        //    {
+        //        // Recursive case: Fibonacci(n) = Fibonacci(n-1) + Fibonacci(n-2)
+        //        return Fibonacci(n - 1) + Fibonacci(n - 2);
+        //    }
+        //}
+        #endregion
+
+        #region Palindrome Number
+        //public class Solution1
+        //{
+        //    public bool IsPalindrome(int x)
+        //    {
+        //        int r = 0, c = x;
+        //        while (c > 0)
+        //        {
+        //            r = r * 10 + c % 10;
+        //            c /= 10;
+        //        }
+        //        return r == x;
+        //    }
+        //}
+        #endregion
+
+        #region Palindrome String
+        //static void Main()
+        //{
+        //    Console.Write("Enter a string: ");
+        //    string input = Console.ReadLine();
+
+        //    // Check if the input string is a palindrome
+        //    if (IsPalindrome(input))
+        //    {
+        //        Console.WriteLine($"{input} is a palindrome.");
+        //    }
+        //    else
+        //    {
+        //        Console.WriteLine($"{input} is not a palindrome.");
+        //    }
+        //}
+
+        //// Function to check if a string is a palindrome
+        //static bool IsPalindrome(string str)
+        //{
+        //    int left = 0;
+        //    int right = str.Length - 1;
+
+        //    // Compare characters from both ends of the string
+        //    while (left < right)
+        //    {
+        //        // If characters don't match, it's not a palindrome
+        //        if (str[left] != str[right])
+        //        {
+        //            return false;
+        //        }
+        //        left++;
+        //        right--;
+        //    }
+        //    return true;  // If all characters match, it's a palindrome
+        //}
+        #endregion
+
+        #region Prime Number Check
+        //static void Main()
+        //{
+        //    int number = 29;  // Number to check if it's prime
+        //    bool isPrime = IsPrime(number);  // Call the IsPrime function
+        //    Console.WriteLine(isPrime ? "Prime Number" : "Not Prime Number");  // Output the result
+        //}
+
+        //static bool IsPrime(int num)
+        //{
+        //    if (num <= 1)  // Numbers less than or equal to 1 are not prime
+        //    {
+        //        return false;
+        //    }
+
+        //    for (int i = 2; i <= Math.Sqrt(num); i++)  // Check divisibility up to the square root of num
+        //    {
+        //        if (num % i == 0)  // If num is divisible by i, it's not a prime number
+        //        {
+        //            return false;  // Return false if a divisor is found
+        //        }
+        //    }
+        //    return true;  // Return true if no divisors are found, meaning the number is prime
+        //}
+        #endregion
+
+        #region Factorial
+        //static void Main()
+        //{
+        //    int number = 5;  // Number to calculate factorial
+        //    int result = Factorial(number);  // Call the Factorial function
+        //    Console.WriteLine("Factorial of " + number + " is: " + result);  // Output the result
+        //}
+
+        //static int Factorial(int num)
+        //{
+        //    if (num == 0 || num == 1)  // Base case: 0! = 1 and 1! = 1
+        //    {
+        //        return 1;
+        //    }
+
+        //    return num * Factorial(num - 1);  // Recursive case: num * (num-1)!
+        //}
+        #endregion
+
+        #region Armstrong Number
+        ////What is an Armstrong Number?
+        ////An Armstrong number(also known as a Narcissistic number or Pluperfect Digital Invariant) is a number that is equal to the sum of its own digits, each raised to the power of the number of digits.
+
+        ////For example:
+        ////153 is an Armstrong number because:
+        ////1^3 +5^3 +3^3 =153
+
+        ////9474 is also an Armstrong number because:
+        ////9^4 +4^4 +7^4 +4^4 =9474
+
+        ////Whereas 123 is not an Armstrong number because:
+        ////1^3 +2^3 +3^3 =1+8+27=36, and that is not equal to 123.
+
+        //static void Main()
+        //{
+        //    int number = 153;  // Number to check if it's an Armstrong number
+        //    bool isArmstrong = IsArmstrong(number);  // Call the IsArmstrong function
+        //    Console.WriteLine(isArmstrong ? "Armstrong Number" : "Not Armstrong Number");  // Output the result
+        //}
+
+        //static bool IsArmstrong(int num)
+        //{
+        //    int sum = 0;
+        //    int originalNumber = num;
+        //    int digitsCount = num.ToString().Length;  // Count the number of digits in the number
+
+        //    // Loop through each digit of the number
+        //    while (num > 0)
+        //    {
+        //        int digit = num % 10;  // Get the last digit
+        //        sum += (int)Math.Pow(digit, digitsCount);  // Add the digit raised to the power of the number of digits
+        //        num /= 10;  // Remove the last digit
+        //    }
+
+        //    return sum == originalNumber;  // If sum of powered digits equals original number, it's an Armstrong number
+        //}
+        #endregion
+
+        #region Sum of Digits of a Number
+        //static void Main()
+        //{
+        //    int number = 1234;  // Number to calculate the sum of digits
+        //    int sum = SumOfDigits(number);
+        //    Console.WriteLine($"Sum of digits of {number} is: {sum}");
+        //}
+
+        //static int SumOfDigits(int num)
+        //{
+        //    int sum = 0;
+        //    while (num > 0)
+        //    {
+        //        sum += num % 10;  // Add last digit to sum
+        //        num /= 10;  // Remove last digit
+        //    }
+        //    return sum;
+        //}
+        #endregion
+
+        #region Reverse a String
+        //static void Main()
+        //{
+        //    //string input = "Yakub";
+        //    Console.Write("Enter a string to reverse: ");
+        //    string input = Console.ReadLine();
+        //    string reversed = ReverseString(input);
+        //    Console.WriteLine(reversed);
+        //}
+
+        //static string ReverseString(string str)
+        //{
+        //    StringBuilder reversedString = new StringBuilder();
+
+        //    for (int i = str.Length - 1; i >= 0; i--)
+        //    {
+        //        reversedString.Append(str[i]);
+        //    }
+
+        //    return reversedString.ToString();
+        //}
+        #endregion
+
+        #region reverse number
+        //public static void Main()
+        //{
+        //    int a = 12345;
+        //    Console.WriteLine(a);
+        //    int reversenumber = reverseNumber(a);
+        //    Console.WriteLine(reversenumber);
+        //}
+        //public static int reverseNumber(int number)
+        //{
+        //    int reversednum = 0;
+        //    while (number > 0)
+        //    {
+        //        int digit = number % 10;
+        //        reversednum = (reversednum * 10 + digit);
+        //        number /= 10;
+        //    }
+        //    return reversednum;
+        //}
+        #endregion
+
+        #region Find middle letter of string
+        //static void Main()
+        //{
+        //    string input = "example";
+        //    char? middleChar = GetMiddleCharacter(input);
+
+        //    if (middleChar.HasValue)
+        //    { Console.WriteLine($"The middle character is: {middleChar.Value}"); }
+        //    else { Console.WriteLine("The string is empty."); }
+        //}
+
+        //static char? GetMiddleCharacter(string str)
+        //{
+        //    if (string.IsNullOrEmpty(str)) { return null; }
+
+        //    int length = str.Length;
+        //    int middleIndex = length / 2;
+
+        //    return length % 2 == 0 ? str[middleIndex - 1] : str[middleIndex];
+        //}
+        #endregion
+
+        #region Distinct Array
+        //static void Main()
+        //{
+        //    int[] numbers = { 1, 1, 1, 1, 1, 2, 3, 4, 5, 6 };
+
+        //    int[] distinctArray = new int[numbers.Length];
+        //    int distinctCount = 0;
+
+        //    for (int i = 0; i < numbers.Length; i++)
+        //    {
+        //        bool isDistinct = true;
+
+        //        for (int j = 0; j < distinctCount; j++)
+        //        {
+        //            if (numbers[i] == distinctArray[j])
+        //            {
+        //                isDistinct = false;
+        //                break;
+        //            }
+        //        }
+
+        //        if (isDistinct)
+        //        {
+        //            distinctArray[distinctCount] = numbers[i];
+        //            distinctCount++;
+        //        }
+        //    }
+
+        //    Console.WriteLine("Distinct elements:");
+        //    for (int i = 0; i < distinctCount; i++)
+
+        //    {
+        //        Console.Write(distinctArray[i] + " ");
+        //    }
+        //}
+        #endregion
+
+        #region Move all the zeroes to one side of array and ones to right side of array
+
+        //static void Main()
+        //{
+        //    int[] arr = { 1, 0, 1, 0, 1, 0, 0, 1, 0 };
+
+        //    MoveZeroesAndOnes(arr);
+
+        //    Console.WriteLine("Modified array: ");
+        //    foreach (int num in arr)
+        //    {
+        //        Console.Write(num + " ");
+        //    }
+        //}
+
+        //static void MoveZeroesAndOnes(int[] arr)
+        //{
+        //    int left = 0;  // Pointer for left side (zeroes)
+        //    int right = arr.Length - 1;  // Pointer for right side (ones)
+
+        //    while (left < right)
+        //    {
+        //        // Move left pointer until we find a 1
+        //        while (arr[left] == 0 && left < right)
+        //        {
+        //            left++;
+        //        }
+
+        //        // Move right pointer until we find a 0
+        //        while (arr[right] == 1 && left < right)
+        //        {
+        //            right--;
+        //        }
+
+        //        // If left pointer is less than right pointer, swap elements
+        //        if (left < right)
+        //        {
+        //            // Swap 0 and 1
+        //            int temp = arr[left];
+        //            arr[left] = arr[right];
+        //            arr[right] = temp;
+
+        //            // Move both pointers
+        //            left++;
+        //            right--;
+        //        }
+        //    }
+        //}
+        #endregion
+
+        #region Swap two strings without using third variable
+        //class Programp
+        //{
+        //    static void Main()
+        //    {
+        //        string str1 = "Hello";
+        //        string str2 = "World";
+
+        //        Console.WriteLine($"Before Swap: str1 = {str1}, str2 = {str2}");
+
+        //        // Step 1: Concatenate both strings and assign to str1
+        //        str1 = str1 + str2; // str1 = "HelloWorld"
+
+        //        // Step 2: Extract str2 from str1
+        //        str2 = str1.Substring(0, str1.Length - str2.Length); // "Hello"
+
+        //        // Step 3: Extract new str1 from concatenated string
+        //        str1 = str1.Substring(str2.Length); // "World"
+
+        //        Console.WriteLine($"After Swap: str1 = {str1}, str2 = {str2}");
+        //    }
+        //}
+        //🧠 How It Works:
+        //str1 = "Hello", str2 = "World"
+
+        //str1 = str1 + str2 → "HelloWorld"
+
+        //str2 = str1.Substring(0, str1.Length - str2.Length) → take "Hello"
+
+        //str1 = str1.Substring(str2.Length) → take "World"
+        #endregion
+
+        #region Matrix
+
+        #region Matrix Addition
+        //static void Main()
+        //{
+        //    // Define two matrices
+        //    int[,] matrix1 = { { 1, 2, 3 }, { 4, 5, 6 } };
+        //    int[,] matrix2 = { { 7, 8, 9 }, { 10, 11, 12 } };
+
+        //    // Get the result of matrix addition
+        //    int[,] result = MatrixAddition(matrix1, matrix2);
+
+        //    // Print the result
+        //    Console.WriteLine("Result of Matrix Addition:");
+        //    PrintMatrix(result);
+        //}
+
+        //static int[,] MatrixAddition(int[,] mat1, int[,] mat2)
+        //{
+        //    int rows = mat1.GetLength(0);
+        //    int cols = mat1.GetLength(1);
+        //    int[,] sum = new int[rows, cols];
+
+        //    // Perform element-wise addition
+        //    for (int i = 0; i < rows; i++)
+        //    {
+        //        for (int j = 0; j < cols; j++)
+        //        {
+        //            sum[i, j] = mat1[i, j] + mat2[i, j];
+        //        }
+        //    }
+        //    return sum;
+        //}
+
+        //// Function to print the matrix
+        //static void PrintMatrix(int[,] matrix)
+        //{
+        //    int rows = matrix.GetLength(0);
+        //    int cols = matrix.GetLength(1);
+
+        //    for (int i = 0; i < rows; i++)
+        //    {
+        //        for (int j = 0; j < cols; j++)
+        //        {
+        //            Console.Write(matrix[i, j] + " ");
+        //        }
+        //        Console.WriteLine();
+        //    }
+        //}
+        #endregion
+
+        #region Matrix Multiplication
+        //static void Main()
+        //{
+        //    // Define two matrices
+        //    int[,] matrix1 = { { 1, 2 }, { 3, 4 } };
+        //    int[,] matrix2 = { { 5, 6 }, { 7, 8 } };
+
+        //    // Get the result of matrix multiplication
+        //    int[,] result = MatrixMultiplication(matrix1, matrix2);
+
+        //    // Print the result
+        //    Console.WriteLine("Result of Matrix Multiplication:");
+        //    PrintMatrix(result);
+        //}
+
+        //static int[,] MatrixMultiplication(int[,] mat1, int[,] mat2)
+        //{
+        //    int rows1 = mat1.GetLength(0);
+        //    int cols1 = mat1.GetLength(1);
+        //    int rows2 = mat2.GetLength(0);
+        //    int cols2 = mat2.GetLength(1);
+
+        //    if (cols1 != rows2)
+        //    {
+        //        throw new Exception("Matrix multiplication is not possible. Columns of the first matrix must equal rows of the second matrix.");
+        //    }
+
+        //    int[,] result = new int[rows1, cols2];
+
+        //    // Perform matrix multiplication
+        //    for (int i = 0; i < rows1; i++)
+        //    {
+        //        for (int j = 0; j < cols2; j++)
+        //        {
+        //            result[i, j] = 0;
+        //            for (int k = 0; k < cols1; k++)
+        //            {
+        //                result[i, j] += mat1[i, k] * mat2[k, j];
+        //            }
+        //        }
+        //    }
+        //    return result;
+        //}
+
+        //// Function to print the matrix
+        //static void PrintMatrix(int[,] matrix)
+        //{
+        //    int rows = matrix.GetLength(0);
+        //    int cols = matrix.GetLength(1);
+
+        //    for (int i = 0; i < rows; i++)
+        //    {
+        //        for (int j = 0; j < cols; j++)
+        //        {
+        //            Console.Write(matrix[i, j] + " ");
+        //        }
+        //        Console.WriteLine();
+        //    }
+        //}
+        #endregion
+
+        #region Matrix Transpose
+        //static void Main()
+        //{
+        //    // Define a matrix
+        //    int[,] matrix = { { 1, 2, 3 }, { 4, 5, 6 } };
+
+        //    // Get the transpose of the matrix
+        //    int[,] result = TransposeMatrix(matrix);
+
+        //    // Print the result
+        //    Console.WriteLine("Transpose of the Matrix:");
+        //    PrintMatrix(result);
+        //}
+
+        //static int[,] TransposeMatrix(int[,] mat)
+        //{
+        //    int rows = mat.GetLength(0);
+        //    int cols = mat.GetLength(1);
+        //    int[,] transpose = new int[cols, rows];
+
+        //    // Swap rows and columns to get the transpose
+        //    for (int i = 0; i < rows; i++)
+        //    {
+        //        for (int j = 0; j < cols; j++)
+        //        {
+        //            transpose[j, i] = mat[i, j];
+        //        }
+        //    }
+        //    return transpose;
+        //}
+
+        //// Function to print the matrix
+        //static void PrintMatrix(int[,] matrix)
+        //{
+        //    int rows = matrix.GetLength(0);
+        //    int cols = matrix.GetLength(1);
+
+        //    for (int i = 0; i < rows; i++)
+        //    {
+        //        for (int j = 0; j < cols; j++)
+        //        {
+        //            Console.Write(matrix[i, j] + " ");
+        //        }
+        //        Console.WriteLine();
+        //    }
+        //}
+        #endregion
+
+        #region Print a 2x2 Matrix
+        //static void Main()
+        //{
+        //    // Define a 2x2 matrix
+        //    int[,] matrix = { { 1, 2 }, { 3, 4 } };
+
+        //    // Print the matrix
+        //    PrintMatrix(matrix);
+        //}
+
+        //static void PrintMatrix(int[,] matrix)
+        //{
+        //    int rows = matrix.GetLength(0);  // Get the number of rows
+        //    int cols = matrix.GetLength(1);  // Get the number of columns
+
+        //    // Loop through the matrix and print each element
+        //    for (int i = 0; i < rows; i++)
+        //    {
+        //        for (int j = 0; j < cols; j++)
+        //        {
+        //            Console.Write(matrix[i, j] + " "); // Print each element
+        //        }
+        //        Console.WriteLine(); // Move to the next line after each row
+        //    }
+        //}
+        #endregion
+
+        #endregion
     }
 }
 
