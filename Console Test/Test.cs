@@ -123,8 +123,7 @@ namespace Console_Test
         #region🔷 1. Encapsulation
 
         //💬 Definition:
-        //Encapsulation is the process of wrapping data(variables) and methods(functions)
-        //that operate on the data into a single unit(class).
+        //Encapsulation is the process of wrapping data(variables) and methods(functions) that operate on the data into a single unit(class).
         //It also involves restricting direct access to some of the object’s components,
         //which is achieved using access modifiers(like private, public).
 
@@ -294,6 +293,16 @@ namespace Console_Test
         #region Abstraction
 
         #region🔷 4. Abstraction
+
+        //"Encapsulation is about hiding data; abstraction is about hiding implementation. Encapsulation uses access modifiers,
+        //while abstraction uses interfaces or abstract classes."
+
+        //| Concept           | What It Hides              | Main Tool Used                   | Purpose                                               |
+        //| ----------------- | ---------------------------| -------------------------------- | ----------------------------------------------------- |
+        //| **Encapsulation** | **Data(fields/variables)** | `private`, `public`, `protected` | Protect and control data                              |
+        //| **Abstraction**   | **Implementation(logic)**  | `interface`, `abstract class`    | Hide complexity, show only need-to-know functionality |
+
+
         //💬 Definition:
         //Abstraction is the process of hiding complex internal details and
         //showing only the essential features of the object. It allows the user to focus on what an object does instead of how it does it.
