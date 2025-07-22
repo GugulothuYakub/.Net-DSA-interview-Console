@@ -122,6 +122,14 @@ namespace Console_Test
 
         #region🔷 1. Encapsulation
 
+        //"Encapsulation is about hiding data; abstraction is about hiding implementation. Encapsulation uses access modifiers,
+        //while abstraction uses interfaces or abstract classes."
+
+        //| Concept           | What It Hides              | Main Tool Used                   | Purpose                                               |
+        //| ----------------- | ---------------------------| -------------------------------- | ----------------------------------------------------- |
+        //| **Encapsulation** | **Data(fields/variables)** | `private`, `public`, `protected` | Protect and control data                              |
+        //| **Abstraction**   | **Implementation(logic)**  | `interface`, `abstract class`    | Hide complexity, show only need-to-know functionality |
+
         //💬 Definition:
         //Encapsulation is the process of wrapping data(variables) and methods(functions) that operate on the data into a single unit(class).
         //It also involves restricting direct access to some of the object’s components,
@@ -304,8 +312,8 @@ namespace Console_Test
 
 
         //💬 Definition:
-        //Abstraction is the process of hiding complex internal details and
-        //showing only the essential features of the object. It allows the user to focus on what an object does instead of how it does it.
+        //Abstraction is the process of hiding complex internal details and showing only the essential features of the object.
+        //It allows the user to focus on what an object does instead of how it does it.
 
         //📌 Real-Life Analogy:
         //When you drive a car, you use the steering wheel and pedals without needing to understand the engine or transmission system.
@@ -1304,6 +1312,22 @@ namespace Console_Test
         //        return new int[] { };
         //    }
         //}
+        #endregion
+
+        #region Swap two strings without third variable
+
+        //string a = "Hello";
+        //string b = "World";
+
+        //a = a + b;            // a = "HelloWorld"
+
+        //b = a.Substring(0, a.Length - b.Length);  // b = "Hello"
+        //a = a.Substring(b.Length);                // a = "World"
+        
+        //// Now a and b are swapped:
+        //Console.WriteLine($"a = {a}");  // World
+        //Console.WriteLine($"b = {b}");  // Hello
+
         #endregion
 
         #region Fibanocci series
